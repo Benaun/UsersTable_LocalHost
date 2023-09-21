@@ -1,0 +1,27 @@
+.table thead tr {
+    font-size: 25px;
+    background-color: #386fc0;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+
+.table__row:nth-child(2n) {
+    background-color: #658d76;
+}
+
+.table__row:nth-child(2n+1) {
+    background-color: #818894;
+}
+
+.table__row td {
+    font-size: 20px;
+}
+
+.sort::after {
+    content: '▲';
+}
+
+.desc::after {
+    content: '▼'
+}

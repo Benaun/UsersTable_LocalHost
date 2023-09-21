@@ -1,0 +1,42 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.title {
+    margin-bottom: 20px;
+    font-size: 35px;
+}
+
+.btn {
+    padding: 2px 5px;
+    border-radius: 8px;
+}
+
+.btn__del {
+    background-color: rgb(216, 96, 96);
+
+}
+
+.btn__edit {
+    background-color: #78ca9b;
+    margin-right: 5px;
+}
+
+.btn__ok {
+    background-color: rgb(230, 215, 215);
+    margin-right: 5px;
+}
+
+.btn__cancel {
+    background-color: rgb(230, 215, 215);
+}
+
+.search__input {
+    margin-bottom: 10px;
+    padding: 10px 20px;
+    border: 2px solid #070707;
+    border-radius: 8px;
+}

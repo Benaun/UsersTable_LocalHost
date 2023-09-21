@@ -1,0 +1,33 @@
+.user__card {
+    display: inline-block;
+    margin: 20px;
+    width: 550px;
+    background: #e9e2d0;
+    box-shadow: -20px 0 35px -25px black, 20px 0 35px -25px black;
+}
+
+.card__wrapper {
+    padding: 15px;
+}
+
+.user__card h2 {
+    font-family: courier;
+    text-align: center;
+    color: #333;
+    margin: 0 auto;
+    padding: 0;
+    font-size: 15pt;
+}
+
+.user__card p {
+    font-family: courier;
+    color: #555;
+    font-size: 13px;
+}
+
+.btn {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid;
+    cursor: pointer;
+}

@@ -1,0 +1,8 @@
+.post__card {
+    display: inline-block;
+    width: 500px;
+    margin: 5px 15px;
+    padding: 10px;
+    background: #e9e2d0;
+    box-shadow: -20px 0 35px -25px black, 20px 0 35px -25px black;
+}
