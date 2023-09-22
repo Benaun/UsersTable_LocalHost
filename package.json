@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "serv": "npm run json-server --watch db.json --port 3333"
   },
   "repository": {
     "type": "git",
@@ -16,8 +17,11 @@
   "author": "Andrey Kharitonov",
   "license": "ISC",
   "dependencies": {
+    "json-server": "^0.17.3",
     "next": "^13.4.19",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-hot-toast": "^2.4.1",
+    "react-dom": "^18.2.0",
+    "swr": "^2.2.2"
   }
 }

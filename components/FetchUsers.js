@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import UserTable from './UserTable';
-import GenFetcher from './GenFetcher';
 import UserForm from './UserForm';
 import { randomId } from '../helpers/randomId'
 import columns from '../helpers/columns';
+import toast from 'react-hot-toast';
+import useSWR from 'swr';
 import css from './StylesModules/FetchUsers.module.css';
+
+const API = 'http://localhost:3333/users/';
 
 
 export default function FetchUser({ onRowClick }) {
   const
-    [users, setUsers] = useState(null),
+    { users, error, isLoading, isValidating, mutate } = useSWR(API, fetcher),
     [sortColumns, setSortColumns] = useState('0'),
     [newUserId, setNewUserId] = useState(null),
     [values, setValues] = useState(columns.map(() => '')),
@@ -23,21 +26,84 @@ export default function FetchUser({ onRowClick }) {
   });
 
 
-  async function fetcher() {
+  async function fetcher(API) {
+    const prom = fetch(API);
+    toast.promise(prom, {
+      loading: 'is loading...',
+      success: 'ok',
+      error: (err) => `Somthing goes wrong: ${err.toString()}`
+    }, { position: 'bottom-center' });
     const
-      response = await fetch('https://jsonplaceholder.typicode.com/users/');
+      response = await prom;
     if (!response.ok) throw new Error('fetch ' + response.status);
     return await response.json();
   }
 
-  function onClick(evt) {
+  async function onClick(evt) {
     const source = evt.target.closest('button[data-action]');
     if (source) {
       const { action, id } = source.dataset;
+
+      let optimisticData;
+      const promise = (() => {
+        switch (action) {
+          case 'delete':
+            optimisticData = users.filter(user => String(user.id) !== id);
+            return fetch(API + id, { method: 'DELETE' })
+              .then(async res => {
+                if (!res.ok) {
+                  throw (new Error(res.status + ' ' + res.statusText));
+                }
+              });
+          case 'ok':
+            setNewUserId(null);
+            if (newUserId) {
+              const index = users.findIndex((obj) => String(obj.id) === String(newUserId));
+              const newUser = { ...users[index] };
+              columns.forEach(({ setVal }, id) => Object.assign(newUser, setVal?.(values[id])));
+              optimisticData = users.with(index, newUser)
+              setValues(columns.map(() => ''));
+              return fetch(API + newUserId,
+                {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(newUser)
+                })
+                .then(async res => {
+                  if (!res.ok) {
+                    throw (new Error(res.status + ' ' + res.statusText));
+                  }
+                });
+            } else {
+              const newUser = { id: randomId(users) };
+              columns.forEach(({ setVal }, index) => Object.assign(newUser, setVal?.(values[index])));
+              optimisticData = data.concat(newUser)
+              setValues(columns.map(() => ''));
+              return fetch(API,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(newUser)
+                })
+                .then(async res => {
+                  if (!res.ok) {
+                    throw (new Error(res.status + ' ' + res.statusText));
+                  }
+                });
+            }
+        }
+      })();
+
+      if (promise) {
+        toast.promise(promise, {
+          loading: 'Fetching ' + action,
+          success: 'ok',
+          error: (err) => `${err.toString()}`,
+        });
+        await mutate(promise.then(fetcher, fetcher), { optimisticData, populateCache: true, revalidate: false });
+      }
+
       switch (action) {
-        case 'delete':
-          setUsers(old => old.filter(el => String(el.id) !== id));
-          return;
         case 'edit':
           setNewUserId(id);
           const index = users.findIndex((obj) => String(obj.id) === String(id));
@@ -47,23 +113,9 @@ export default function FetchUser({ onRowClick }) {
           setNewUserId(null);
           setValues(columns.map(() => ''));
           return;
-        case 'ok':
-          if (newUserId) {
-            const index = users.findIndex((obj) => String(obj.id) === String(newUserId));
-            const newUser = users[index];
-            columns.forEach(({ setVal }, id) => Object.assign(newUser, setVal?.(values[id])));
-            setUsers(old => old.with(index, newUser));
-          } else {
-            const newUser = { id: randomId(users) };
-            columns.forEach(({ setVal }, index) => Object.assign(newUser, setVal?.(values[index])));
-            setUsers(users.concat(newUser));
-          };
-          setNewUserId(null);
-          setValues(columns.map(() => ''));
       };
       return;
     };
-
 
     const th = evt.target.closest('th');
     if (th && th.cellIndex !== 7) {
@@ -101,11 +153,14 @@ export default function FetchUser({ onRowClick }) {
     <div className={css.container} onClick={onClick}>
       <h1 className={css.title}>Таблица пользователей</h1>
       <input className={css.search__input} placeholder='Поиск по таблице' value={searchValue} onInput={event => setSearchValue(event.target.value)} />
-      <GenFetcher fetcher={fetcher} onLoadCallback={setUsers}>
-        <UserTable users={users?.filter(filterObjects)} onRowClick={onRowClick} columns={columnsWithButtons} sortColumns={sortColumns} newUserId={newUserId}>
-          <UserForm columns={columns} values={values} setValues={setValues}/>
-        </UserTable>
-      </GenFetcher>
+      {users && <UserTable users={users?.filter(filterObjects)} onRowClick={onRowClick} columns={columnsWithButtons} sortColumns={sortColumns} newUserId={newUserId}>
+        <UserForm columns={columns} values={values} setValues={setValues} />
+      </UserTable>}
+      <div style={{ position: 'absolute', fontSize: 'xxx-large' }}>
+        {isLoading && <>⌛</>}
+        {isValidating && <></>}
+      </div>
+      {error && <>Error {error.toString()}</>}
     </div>
   );
 };

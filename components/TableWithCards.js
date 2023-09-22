@@ -3,6 +3,8 @@ import { useState } from "react";
 import FetchUsers from "./FetchUsers";
 import css from "./StylesModules/TableWithCards.module.css"
 
+const API = 'http://localhost:3333/users/';
+
 export default function TableWithCards() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [userDetails, setUserDetails] = useState(null);
@@ -10,7 +12,7 @@ export default function TableWithCards() {
     
 
     async function handleRowClick(userId) {
-        const currentUser = await fetch(`https://jsonplaceholder.typicode.com/users/${userId}`);
+        const currentUser = await fetch(`${API}${userId}`);
         setUserDetails(await currentUser.json());
         setSelectedUser(userId);
     };
